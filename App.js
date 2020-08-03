@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, Text, View , TouchableOpacity, Image, StyleSheet} from 'react-native';
+import { Text, View , TouchableOpacity,Button, StyleSheet, ImageBackground} from 'react-native';
 import { Camera } from 'expo-camera';
 
 export default App = () => {
@@ -17,11 +17,19 @@ export default App = () => {
       width: 66,
       height: 58,
     },
+    textCenter: {
+      textAlign: 'center', // <-- the magic
+      fontWeight: 'bold',
+      fontSize: 18,
+      marginTop: 0,
+      backgroundColor: 'yellow',
+    },
   });
   
   
   const [hasPermission, setHasPermission] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
+  const [imageUri, setImageUri] = useState('https://reactnative.dev/img/tiny_logo.png');
 
   useEffect(() => {
     (async () => {
@@ -39,12 +47,16 @@ export default App = () => {
     return <Text>No access to camera</Text>;
   }
 
-  const { imageUri } = 'https://reactnative.dev/img/tiny_logo.png';
-  if (imageUri) {
-    return <ImageBackground source={imageUri}/>;
+  takePicture = async() => {
+    if(this.Camera){
+      const { uri } = await this.Camera.takePictureAsync();
+      console.log('uri', uri);
+      setImageUri(uri);
+    }
   }
   return (
     <View style={{ flex: 1 }}>
+      <ImageBackground style={{ flex: 1 }} source={{ uri: imageUri}}/>
       <Camera style={{ flex: 1 }} ref={ref => {this.Camera = ref;}} type={type}>
         <View
           style={{
@@ -67,14 +79,7 @@ export default App = () => {
             }}>
             <Text style={{ fontSize: 18, marginBottom: 10, color: 'white' }}> Flip </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={{alignSelf: 'center'}} onPress={async() => {
-            if(this.Camera){
-              // let photo = await this.Camera.takePictureAsync();
-              const { uri } = await this.Camera.takePictureAsync();
-              this.setState({ imageUri: uri });
-              // console.log('photo', photo);
-            }
-          }}>
+          <TouchableOpacity style={{alignSelf: 'center'}} onPress={() => this.takePicture()}>
             <View style={{ 
                borderWidth: 2,
                borderRadius:"50%",
@@ -100,38 +105,4 @@ export default App = () => {
           
     </View>
   );
-
-  // const [isLoading, setLoading] = useState(true);
-  // const [data, setData] = useState([]);
-
-  // // useEffect(() => {
-  // //   fetch('https://reactnative.dev/movies.json')
-  // //     .then((response) => response.json())
-  // //     .then((json) => setData(json.movies))
-  // //     .catch((error) => console.error(error))
-  // //     .finally(() => setLoading(false));
-  // // }, []);
-  // useEffect(() => {
-  //   fetch('https://api.openweathermap.org/data/2.5/weather?appid=956640cba3a37f95b75f7e07b0b71528&q=tokyo')
-  //     .then((response) => response.json())
-  //     .then((json) => setData(json.weather))
-  //     .catch((error) => console.error(error))
-  //     .finally(() => setLoading(false));
-  // }, []);
-
-  
-
-  // return (
-  //   <View style={{ flex: 1, padding: 24 }}>
-  //     {isLoading ? <ActivityIndicator/> : (
-  //       <FlatList
-  //         data={data}
-  //         keyExtractor={({ id }, index) => id}
-  //         renderItem={({ item }) => (
-  //           <Text>{item.main}, {item.description}</Text>
-  //         )}
-  //       />
-  //     )}
-  //   </View>
-  // );
 };
