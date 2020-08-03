@@ -29,7 +29,7 @@ export default App = () => {
       setHasPermission(status === 'granted');
     })();
   }, []);
-  
+
 
 
   if (hasPermission === null) {
@@ -38,15 +38,14 @@ export default App = () => {
   if (hasPermission === false) {
     return <Text>No access to camera</Text>;
   }
+
+  const { imageUri } = 'https://reactnative.dev/img/tiny_logo.png';
+  if (imageUri) {
+    return <ImageBackground source={imageUri}/>;
+  }
   return (
     <View style={{ flex: 1 }}>
-      <Image
-        style={styles.tinyLogo}
-        source={{
-          uri: 'https://reactnative.dev/img/tiny_logo.png',
-        }}
-      />
-      <Camera style={{ flex: 1 }} type={type}>
+      <Camera style={{ flex: 1 }} ref={ref => {this.Camera = ref;}} type={type}>
         <View
           style={{
             flex: 1,
@@ -65,13 +64,36 @@ export default App = () => {
                   ? Camera.Constants.Type.front
                   : Camera.Constants.Type.back
               );
-              // snap = async () => {
-              //   if (this.camera) {
-              //     let photo = await this.camera.takePictureAsync();
-              //   }
-              // };
             }}>
             <Text style={{ fontSize: 18, marginBottom: 10, color: 'white' }}> Flip </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={{alignSelf: 'center'}} onPress={async() => {
+            if(this.Camera){
+              // let photo = await this.Camera.takePictureAsync();
+              const { uri } = await this.Camera.takePictureAsync();
+              this.setState({ imageUri: uri });
+              // console.log('photo', photo);
+            }
+          }}>
+            <View style={{ 
+               borderWidth: 2,
+               borderRadius:"50%",
+               borderColor: 'white',
+               height: 50,
+               width:50,
+               display: 'flex',
+               justifyContent: 'center',
+               alignItems: 'center'}}
+            >
+              <View style={{
+                 borderWidth: 2,
+                 borderRadius:"50%",
+                 borderColor: 'white',
+                 height: 40,
+                 width:40,
+                 backgroundColor: 'white'}} >
+              </View>
+            </View>
           </TouchableOpacity>
         </View>
       </Camera>
