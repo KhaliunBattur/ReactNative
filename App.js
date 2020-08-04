@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Text, View , TouchableOpacity,Button, StyleSheet, ImageBackground} from 'react-native';
+import { Text, View ,ActivityIndicator,FlatList, TouchableOpacity,Button, StyleSheet, ImageBackground} from 'react-native';
 import { Camera } from 'expo-camera';
 
 export default App = () => {
@@ -30,14 +30,26 @@ export default App = () => {
   const [hasPermission, setHasPermission] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [imageUri, setImageUri] = useState('https://reactnative.dev/img/tiny_logo.png');
+  const [base64, setBase64] = useState("");
+  const [isLoading, setLoading] = useState(true);
+  const [data, setData] = useState([]);
+  const [response, setResponse] = useState("");
+
+  state = {
+      test: "Hello"
+  }
 
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestPermissionsAsync();
       setHasPermission(status === 'granted');
     })();
+    fetch('https://api.openweathermap.org/data/2.5/weather?appid=956640cba3a37f95b75f7e07b0b71528&q=tokyo')
+          .then((response) => response.json())
+          .then((json) => setData(json.weather))
+          .catch((error) => console.error(error))
+          .finally(() => setLoading(false));
   }, []);
-
 
 
   if (hasPermission === null) {
@@ -50,13 +62,58 @@ export default App = () => {
   takePicture = async() => {
     if(this.Camera){
       const { uri } = await this.Camera.takePictureAsync();
-      console.log('uri', uri);
-      setImageUri(uri);
+      // let data = await 
+      // const { myBase64 } = await this.Camera.takePictureAsync({base64: true,});
+      // const base64image = await RNFS.readFile(uri, 'base64');
+      this.Camera.takePictureAsync({base64: true,}).then(data => {
+        setBase64(data.base64);
+        console.log("base64:", base64);
+      //   // console.log(data.base64);
+      //   // this.setState({test:"Hello test"})
+        });
+      // console.log("uri", uri);
+      console.log("base64image:", base64image);
+      // setImageUri(uri);
+      getMoviesFromApi();
     }
   }
+
+  const getMoviesFromApi = async () => {
+    try {
+      let response = await fetch('http://18.190.16.127:3005/api/login', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          auth: "testing-api",
+          timestamp: 1000,
+          username: "Khaliun",
+          data: base64
+          })
+      });  
+      let json = await response.json()
+      console.log("response", json);
+      setResponse(json.message);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <View style={{ flex: 1 }}>
+        {/* {isLoading ? <ActivityIndicator/> : (
+          <FlatList
+            data={data}
+            keyExtractor={({ id }, index) => id}
+            renderItem={({ item }) => (
+              <Text>{item.main}, {item.description}</Text>
+            )}
+          />
+        )} */}
       <ImageBackground style={{ flex: 1 }} source={{ uri: imageUri}}/>
+      <Text>Message: {response}</Text>
       <Camera style={{ flex: 1 }} ref={ref => {this.Camera = ref;}} type={type}>
         <View
           style={{
